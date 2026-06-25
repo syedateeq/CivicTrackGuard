@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+
+/* ============================
+   Design Tokens (Tailwind v4)
+   ============================ */
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-900: #1e3a8a;
+
+  --color-purple-500: #8b5cf6;
+  --color-purple-600: #7c3aed;
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  --color-dark-900: #0f172a;
+  --color-dark-800: #1e293b;
+  --color-dark-700: #334155;
+  --color-dark-600: #475569;
+
+  --animate-fade-in: fadeIn 0.5s ease-out both;
+  --animate-slide-up: slideUp 0.4s ease-out both;
+  --animate-slide-in-right: slideInRight 0.4s ease-out both;
+  --animate-pulse-slow: pulse 3s infinite;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(24px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+}
+
+/* ============================
+   Base Reset
+   ============================ */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased min-h-screen;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-slate-700 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-600; }
+}
+
+/* ============================
+   Component Utilities
+   ============================ */
+@layer components {
+
+  /* Glass card — dark glassmorphism */
+  .glass {
+    @apply bg-slate-900/70 backdrop-blur-xl border border-white/10 shadow-xl;
+  }
+
+  /* Lighter glass for panels */
+  .glass-light {
+    @apply bg-slate-800/60 backdrop-blur-lg border border-[rgba(255,255,255,0.06)] shadow-lg;
+  }
+
+  /* Primary gradient button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 font-semibold text-white 
+           rounded-xl px-5 py-2.5 transition-all duration-200 
+           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.45);
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 font-medium 
+           bg-slate-800 text-slate-200 border border-slate-700 
+           rounded-xl px-5 py-2.5 transition-all duration-200 
+           hover:bg-slate-700 hover:border-slate-600 active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Danger button */
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 font-medium text-white
+           bg-red-600 hover:bg-red-500 rounded-xl px-5 py-2.5 
+           transition-all duration-200 active:scale-95;
+  }
+
+  /* Input field */
+  .input-field {
+    @apply w-full bg-slate-800/80 border border-slate-700 text-slate-100 
+           rounded-xl px-4 py-3 placeholder:text-slate-500
+           focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20
+           transition-all duration-200;
+  }
+
+  /* Status badges */
+  .badge-pending   { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/25; }
+  .badge-verified  { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/15 text-blue-400 border border-blue-500/25; }
+  .badge-progress  { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/15 text-purple-400 border border-purple-500/25; }
+  .badge-resolved  { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25; }
+  .badge-rejected  { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-400 border border-red-500/25; }
+
+  /* Severity badges */
+  .badge-high    { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-400 border border-red-500/30; }
+  .badge-medium  { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30; }
+  .badge-low     { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/15 text-green-400 border border-green-500/30; }
+  
+  /* Page section */
+  .page-header {
+    @apply mb-8;
+  }
+  .page-title {
+    @apply text-3xl font-bold text-white mb-1;
+  }
+  .page-subtitle {
+    @apply text-slate-400 text-sm;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply bg-slate-900/70 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 flex items-start gap-4 hover:border-slate-600/50 transition-all duration-300;
+  }
+  .stat-icon {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center shrink-0;
+  }
+}
+
