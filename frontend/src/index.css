@@ -146,5 +146,10 @@
   .stat-icon {
     @apply w-12 h-12 rounded-xl flex items-center justify-center shrink-0;
   }
+
+  /* Safe Area Utilities for PWA/Mobile */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 

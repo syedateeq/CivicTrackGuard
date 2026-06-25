@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, PlusCircle, Trophy, Bell, 
-  ShieldCheck, Settings, Map
+  ShieldCheck, Settings, Map, PhoneCall
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../utils/cn';
@@ -17,9 +17,10 @@ const Sidebar = () => {
     { name: 'Dashboard',    path: '/dashboard',    icon: LayoutDashboard },
     { name: 'Issue Feed',   path: '/issues',       icon: FileText },
     ...(isAdmin ? [] : [{ name: 'Report Issue', path: '/issues/new',   icon: PlusCircle }]),
-    { name: 'Map',          path: '/map',          icon: Map },
-    { name: 'Leaderboard',  path: '/leaderboard',  icon: Trophy },
+    { name: 'Map',           path: '/map',          icon: Map },
+    { name: 'Leaderboard',   path: '/leaderboard',  icon: Trophy },
     { name: 'Notifications', path: '/notifications', icon: Bell },
+    { name: 'Emergency',     path: '/emergency',    icon: PhoneCall },
   ];
 
   if (isAdmin) {

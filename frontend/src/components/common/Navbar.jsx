@@ -2,16 +2,67 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { 
   Shield, Bell, Menu, X, User, LogOut, LayoutDashboard, 
-  FileText, PlusCircle, Trophy, Settings, ShieldCheck, ChevronDown
+  FileText, PlusCircle, Trophy, Settings, ShieldCheck, ChevronDown, Download, PhoneCall
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../utils/cn';
+import usePWAInstall from '../../hooks/usePWAInstall';
+
+/**
+ * A compact Install App button for the navbar.
+ * - If browser supports beforeinstallprompt → shows a gradient button that triggers native install dialog.
+ * - If already installed (standalone mode) → renders nothing.
+ * - If browser doesn't support the prompt (e.g. Firefox, Safari) → shows icon-only button
+ *   that toggles a small tooltip: "Use browser menu → Add to Home Screen".
+ */
+const InstallButton = ({ isInstallable, handleInstall, showTip, setShowTip }) => {
+  // Already running as installed PWA — hide entirely
+  if (window.matchMedia('(display-mode: standalone)').matches) return null;
+
+  if (isInstallable) {
+    return (
+      <button
+        onClick={handleInstall}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-95 hover:opacity-90"
+        style={{ background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)', boxShadow: '0 2px 12px rgba(37,99,235,0.35)' }}
+        title="Install CivicTrackGuard"
+      >
+        <Download size={15} />
+        <span className="hidden sm:inline">Install App</span>
+      </button>
+    );
+  }
+
+  // Fallback: browser does not fire beforeinstallprompt (Firefox, Safari etc.)
+  // Show a help icon that toggles a small tip
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShowTip(!showTip)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium text-slate-400 bg-slate-800 border border-slate-700 hover:border-slate-600 hover:text-slate-200 transition-all duration-200"
+        title="How to install"
+      >
+        <Download size={15} />
+        <span className="hidden sm:inline">Install</span>
+      </button>
+      {showTip && (
+        <div className="absolute right-0 mt-2 w-56 glass rounded-xl border border-white/10 shadow-2xl p-3 z-50 text-xs text-slate-300 leading-relaxed">
+          <p className="font-semibold text-white mb-1">📲 Install this app</p>
+          <p>Open your <strong className="text-slate-200">browser menu</strong> and tap <strong className="text-slate-200">"Add to Home Screen"</strong> or <strong className="text-slate-200">"Install App"</strong>.</p>
+          <button onClick={() => setShowTip(false)} className="mt-2 text-slate-500 hover:text-white transition-colors text-[11px]">Dismiss</button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showInstallTip, setShowInstallTip] = useState(false);
+  const { isInstallable, handleInstall } = usePWAInstall();
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -89,6 +140,7 @@ const Navbar = () => {
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-slate-950" />
                 </Link>
 
+
                 {/* User dropdown */}
                 <div className="relative">
                   <button
@@ -140,6 +192,8 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center gap-2">
+                {/* Install button — public (unauthenticated) area */}
+                <InstallButton isInstallable={isInstallable} handleInstall={handleInstall} showTip={showInstallTip} setShowTip={setShowInstallTip} />
                 <Link to="/login" className="text-sm text-slate-400 hover:text-white px-3 py-2 transition-colors">
                   Log in
                 </Link>
@@ -155,19 +209,20 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {mobileOpen && isAuthenticated && (
         <div className="lg:hidden fixed inset-x-0 top-16 z-40 glass border-b border-white/5 py-3 px-4">
-          {navItems.map(({ name, path, icon: Icon }) => (
-            <NavLink
-              key={path}
-              to={path}
-              className={({ isActive }) => cn(
-                'flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors mb-1',
-                isActive ? 'bg-primary-600/20 text-primary-400' : 'text-slate-400 hover:text-white hover:bg-white/5'
-              )}
-              onClick={() => setMobileOpen(false)}
-            >
-              <Icon size={18} /> {name}
+          <NavLink to="/leaderboard" className={({ isActive }) => cn('flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors mb-1', isActive ? 'bg-primary-600/20 text-primary-400' : 'text-slate-400 hover:text-white hover:bg-white/5')} onClick={() => setMobileOpen(false)}>
+            <Trophy size={18} /> Leaderboard
+          </NavLink>
+          {isAdmin && (
+            <NavLink to="/admin" className={({ isActive }) => cn('flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors mb-1', isActive ? 'bg-purple-600/20 text-purple-400' : 'text-slate-400 hover:text-white hover:bg-white/5')} onClick={() => setMobileOpen(false)}>
+              <ShieldCheck size={18} /> Admin Panel
             </NavLink>
-          ))}
+          )}
+          <NavLink to="/settings" className={({ isActive }) => cn('flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors mb-1', isActive ? 'bg-primary-600/20 text-primary-400' : 'text-slate-400 hover:text-white hover:bg-white/5')} onClick={() => setMobileOpen(false)}>
+            <Settings size={18} /> Settings
+          </NavLink>
+          <NavLink to="/emergency" className={({ isActive }) => cn('flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors mb-1', isActive ? 'bg-red-500/20 text-red-400' : 'text-slate-400 hover:text-white hover:bg-white/5')} onClick={() => setMobileOpen(false)}>
+            <PhoneCall size={18} /> Emergency
+          </NavLink>
         </div>
       )}
 

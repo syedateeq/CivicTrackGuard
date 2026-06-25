@@ -19,6 +19,7 @@ import AdminLogin from './pages/admin/AdminLogin';
 import MapPage from './pages/MapPage';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import EmergencyContacts from './pages/EmergencyContacts';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
               <Route path="map" element={<MapPage />} />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="emergency" element={<EmergencyContacts />} />
             </Route>
             
             {/* Admin Routes */}

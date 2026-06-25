@@ -305,8 +305,8 @@ const ReportIssue = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Location</h2>
             <button type="button" onClick={useCurrentLocation}
-              className="btn-secondary text-xs py-1.5 px-3">
-              <MapPin size={13} /> Use GPS
+              className="btn-secondary text-sm py-2 px-3 flex items-center gap-1">
+              <MapPin size={15} /> Use GPS
             </button>
           </div>
           <input type="text" name="address"
@@ -333,7 +333,7 @@ const ReportIssue = () => {
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Photo Evidence</h2>
 
           {isCameraOpen ? (
-            <div className="relative rounded-xl overflow-hidden bg-black/50 aspect-video flex items-center justify-center border border-white/10">
+            <div className="relative rounded-xl overflow-hidden bg-black/50 aspect-[3/4] sm:aspect-video flex items-center justify-center border border-white/10">
               <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
               <canvas ref={canvasRef} className="hidden" />
               <button type="button" onClick={stopCamera}
