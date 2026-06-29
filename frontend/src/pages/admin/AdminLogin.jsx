@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Mail, Lock, ShieldCheck, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, AlertCircle, Loader2, Eye, EyeOff, Copy, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../utils/helpers';
@@ -12,6 +12,8 @@ const AdminLogin = () => {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedPassword, setCopiedPassword] = useState(false);
   const { login, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -23,7 +25,7 @@ const AdminLogin = () => {
       const data = await login(email, password);
       if (data.role !== 'ADMIN') {
         logout();
-        throw new Error('Unauthorized. Admin access only.');
+        throw new Error('Only admin accounts can access this portal. Use the demo admin credentials below for hackathon judging.');
       }
       toast.success('Welcome back, Admin!');
       navigate('/admin', { replace: true });
@@ -33,6 +35,39 @@ const AdminLogin = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loginAsDemo = async () => {
+    setEmail('admin@civictrack.com');
+    setPassword('admin');
+    setError('');
+    setLoading(true);
+    try {
+      const data = await login('admin@civictrack.com', 'admin');
+      if (data.role !== 'ADMIN') {
+        logout();
+        throw new Error('Only admin accounts can access this portal. Use the demo admin credentials below for hackathon judging.');
+      }
+      toast.success('Welcome back, Admin!');
+      navigate('/admin', { replace: true });
+    } catch (err) {
+      const msg = getErrorMessage(err);
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText('admin@civictrack.com');
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
+
+  const handleCopyPassword = () => {
+    navigator.clipboard.writeText('admin');
+    setCopiedPassword(true);
+    setTimeout(() => setCopiedPassword(false), 2000);
   };
 
   return (
@@ -101,6 +136,35 @@ const AdminLogin = () => {
               {loading ? <Loader2 size={18} className="animate-spin" /> : 'Enter Admin Portal'}
             </button>
           </form>
+          
+          {/* Demo Admin Credentials Card */}
+          <div className="mt-6 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-indigo-300">Demo Admin / Judges</h3>
+            </div>
+            <div className="space-y-2 mb-3">
+              <div className="flex items-center justify-between bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
+                <span className="text-sm text-slate-300 font-mono tracking-wide">admin@civictrack.com</span>
+                <button type="button" onClick={handleCopyEmail} className="p-1 rounded-md text-slate-500 hover:bg-slate-800 hover:text-indigo-400 transition-colors" title="Copy Email">
+                  {copiedEmail ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                </button>
+              </div>
+              <div className="flex items-center justify-between bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
+                <span className="text-sm text-slate-300 font-mono tracking-widest">admin</span>
+                <button type="button" onClick={handleCopyPassword} className="p-1 rounded-md text-slate-500 hover:bg-slate-800 hover:text-indigo-400 transition-colors" title="Copy Password">
+                  {copiedPassword ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                </button>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              onClick={loginAsDemo}
+              disabled={loading}
+              className="w-full py-2.5 mt-1 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all flex items-center justify-center gap-2 border border-indigo-500/50 shadow-lg shadow-indigo-500/20"
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Login as Demo Admin'}
+            </button>
+          </div>
           
           <p className="text-center text-sm text-slate-500 mt-6">
             <Link to="/login" className="text-slate-400 hover:text-white font-medium transition-colors">
