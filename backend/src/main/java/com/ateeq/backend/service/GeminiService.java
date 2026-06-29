@@ -404,5 +404,217 @@ public class GeminiService {
                 .reasoning("This issue was classified using keyword analysis (AI service was unavailable). The category and severity are based on keywords found in the description.")
                 .build();
     }
+
+    // ======================== DUPLICATE DETECTION ========================
+
+    /**
+     * Simple DTO to carry candidate issue summaries for the Gemini prompt.
+     */
+    public static class CandidateSummary {
+        public Long id;
+        public String title;
+        public String description;
+        public String address;
+        public String category;
+
+        public CandidateSummary(Long id, String title, String description, String address, String category) {
+            this.id = id;
+            this.title = title;
+            this.description = description;
+            this.address = address;
+            this.category = category;
+        }
+    }
+
+    /**
+     * Individual similarity result from Gemini.
+     */
+    public static class SimilarityResult {
+        public Long issueId;
+        public int similarityScore;
+        public String matchReason;
+    }
+
+    /**
+     * Uses Gemini AI to score how similar a new issue description is to a list of
+     * existing candidate issues. Returns a list of scored results.
+     * Falls back to an empty list on any failure.
+     */
+    public List<SimilarityResult> checkDuplicates(String newDescription, String newCategory,
+                                                   String newAddress, List<CandidateSummary> candidates) {
+        if (candidates == null || candidates.isEmpty()) {
+            return List.of();
+        }
+
+        try {
+            String prompt = buildDuplicatePrompt(newDescription, newCategory, newAddress, candidates);
+            String geminiResponse = callGeminiApi(prompt);
+            return parseDuplicateResponse(geminiResponse, candidates);
+        } catch (Exception e) {
+            log.error("Gemini duplicate detection failed: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    private String buildDuplicatePrompt(String newDescription, String newCategory,
+                                         String newAddress, List<CandidateSummary> candidates) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("""
+            You are a duplicate issue detector for a civic issue reporting platform called CivicTrackGuard.
+            A citizen is about to report a new issue. Your job is to check whether any EXISTING issues
+            in the system describe the SAME real-world problem (same physical issue at the same or very nearby location).
+
+            NEW ISSUE being reported:
+            """);
+        sb.append("Description: \"").append(newDescription).append("\"\n");
+        sb.append("Category: ").append(newCategory != null ? newCategory : "Not specified").append("\n");
+        sb.append("Location: ").append(newAddress != null ? newAddress : "Not specified").append("\n\n");
+
+        sb.append("EXISTING ISSUES to compare against:\n");
+        for (int i = 0; i < candidates.size(); i++) {
+            CandidateSummary c = candidates.get(i);
+            sb.append(String.format("[ID=%d] Title: \"%s\" | Description: \"%s\" | Location: \"%s\" | Category: %s\n",
+                    c.id,
+                    truncateForPrompt(c.title, 100),
+                    truncateForPrompt(c.description, 300),
+                    c.address != null ? c.address : "N/A",
+                    c.category != null ? c.category : "N/A"));
+        }
+
+        sb.append("""
+
+            INSTRUCTIONS:
+            For each existing issue, determine how likely it is that the NEW ISSUE is describing the SAME
+            real-world problem (not just the same category — the same specific incident or location).
+
+            Respond ONLY with a valid JSON array. No markdown, no extra text, no code blocks.
+            Each element must have:
+            {
+              "issueId": <the ID number>,
+              "similarityScore": <0 to 100>,
+              "matchReason": "brief explanation of why this is or isn't a match"
+            }
+
+            SCORING GUIDE:
+            - 90-100: Almost certainly the same issue (same location, same problem described)
+            - 70-89: Very likely the same issue (very similar description and nearby location)
+            - 50-69: Possibly the same issue (similar problem type, somewhat nearby)
+            - 30-49: Unlikely but worth noting (same category, different specifics)
+            - 0-29: Not a match
+
+            Only include issues with similarityScore >= 30 in your response.
+            If no issues match, return an empty array: []
+            """);
+
+        return sb.toString();
+    }
+
+    private List<SimilarityResult> parseDuplicateResponse(String responseBody, List<CandidateSummary> candidates) {
+        try {
+            JsonNode root = objectMapper.readTree(responseBody);
+            String text = root
+                    .path("candidates").get(0)
+                    .path("content")
+                    .path("parts").get(0)
+                    .path("text").asText();
+
+            // Clean up potential markdown code blocks
+            text = text.trim();
+            if (text.startsWith("```")) {
+                text = text.replaceAll("```json\\n?", "").replaceAll("```\\n?", "").trim();
+            }
+
+            // Parse as array
+            JsonNode arrayNode = objectMapper.readTree(text);
+            List<SimilarityResult> results = new java.util.ArrayList<>();
+
+            if (arrayNode.isArray()) {
+                // Collect valid candidate IDs for validation
+                var validIds = candidates.stream().map(c -> c.id).collect(java.util.stream.Collectors.toSet());
+
+                for (JsonNode node : arrayNode) {
+                    SimilarityResult result = new SimilarityResult();
+                    result.issueId = node.path("issueId").asLong();
+                    result.similarityScore = node.path("similarityScore").asInt();
+                    result.matchReason = node.path("matchReason").asText("");
+
+                    // Validate: only include results for known candidate IDs with score >= 30
+                    if (validIds.contains(result.issueId) && result.similarityScore >= 30) {
+                        result.similarityScore = Math.min(result.similarityScore, 100);
+                        results.add(result);
+                    }
+                }
+            }
+
+            // Sort by score descending
+            results.sort((a, b) -> Integer.compare(b.similarityScore, a.similarityScore));
+            return results;
+        } catch (Exception e) {
+            log.error("Failed to parse Gemini duplicate response: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    private String truncateForPrompt(String text, int maxLen) {
+        if (text == null) return "";
+        if (text.length() <= maxLen) return text;
+        return text.substring(0, maxLen) + "...";
+    }
+
+    // ======================== OFFICER AI COPILOT ========================
+
+    /**
+     * Specialized prompt method for the Officer AI Copilot.
+     * Injects a dynamic system context (aggregated active issue stats) along with the officer's question.
+     */
+    public String officerCopilotAsk(String systemContext, String userQuestion) {
+        try {
+            String fullPrompt = """
+                You are the Officer AI Copilot for CivicTrackGuard, assisting city administrators and officers.
+                Your goal is to help them manage civic issues effectively based on the live system snapshot provided below.
+                
+                You must answer their questions clearly, professionally, and concisely.
+                Use bullet points for lists. Focus on actionable insights.
+                Do NOT hallucinate data. Only use the data from the snapshot provided.
+                If the question cannot be answered using the provided snapshot, politely explain that you don't have that specific information in your current view.
+                
+                CURRENT SYSTEM SNAPSHOT:
+                ------------------------
+                """ + systemContext + """
+                ------------------------
+                
+                Officer's Question:
+                """ + userQuestion + """
+                
+                Response:
+                """;
+            String geminiResponse = callGeminiApi(fullPrompt);
+            return extractTextFromGeminiResponse(geminiResponse);
+        } catch (Exception e) {
+            log.error("Officer Copilot Gemini call failed: {}", e.getMessage());
+            return null; // The service handles null with a rule-based fallback
+        }
+    }
+
+    private String extractTextFromGeminiResponse(String responseBody) {
+        try {
+            JsonNode root = objectMapper.readTree(responseBody);
+            String text = root
+                    .path("candidates").get(0)
+                    .path("content")
+                    .path("parts").get(0)
+                    .path("text").asText();
+            
+            // Clean up markdown block if present
+            text = text.trim();
+            if (text.startsWith("```")) {
+                text = text.replaceAll("```json\\n?", "").replaceAll("```\\n?", "").trim();
+            }
+            return text;
+        } catch (Exception e) {
+            log.error("Failed to parse Gemini text response: {}", e.getMessage());
+            throw new RuntimeException("Failed to extract text from AI response");
+        }
+    }
 }
 

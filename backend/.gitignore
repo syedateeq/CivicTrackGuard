@@ -34,3 +34,4 @@ build/
 
 ### Secrets ###
 .env
+application-dev.properties

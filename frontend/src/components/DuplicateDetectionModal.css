@@ -1,0 +1,388 @@
+/* =============================================
+   Duplicate Detection Modal — Scoped Styles
+   Premium glassmorphism matching AI Intake Agent
+   ============================================= */
+
+/* ---- Overlay ---- */
+.dup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 1rem;
+}
+
+/* ---- Modal Container ---- */
+.dup-modal {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.92) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 8px 50px rgba(0, 0, 0, 0.45),
+    0 0 80px rgba(251, 191, 36, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+/* ---- Header ---- */
+.dup-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(251, 191, 36, 0.04);
+}
+
+.dup-header-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  flex-shrink: 0;
+}
+
+.dup-header-text h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.dup-header-text p {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0.125rem 0 0;
+}
+
+.dup-close-btn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dup-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+}
+
+/* ---- Scrollable Body ---- */
+.dup-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.dup-body::-webkit-scrollbar { width: 4px; }
+.dup-body::-webkit-scrollbar-track { background: transparent; }
+.dup-body::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.15); border-radius: 2px; }
+
+/* ---- Issue Card ---- */
+.dup-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.875rem;
+  padding: 1rem;
+  transition: all 0.25s ease;
+}
+.dup-card:hover {
+  border-color: rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
+}
+
+.dup-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.625rem;
+}
+
+.dup-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.3;
+  flex: 1;
+}
+
+/* ---- Confidence Ring (reused pattern from AI Intake) ---- */
+.dup-confidence-ring {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dup-confidence-ring svg {
+  transform: rotate(-90deg);
+}
+.dup-confidence-ring .bg-ring {
+  stroke: rgba(255, 255, 255, 0.06);
+}
+.dup-confidence-ring .fg-ring {
+  transition: stroke-dashoffset 0.6s ease;
+}
+.dup-confidence-value {
+  position: absolute;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+/* ---- Meta badges row ---- */
+.dup-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.dup-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.675rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.dup-badge.status-pending   { color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); background: rgba(251, 191, 36, 0.08); }
+.dup-badge.status-verified  { color: #34d399; border-color: rgba(52, 211, 153, 0.2); background: rgba(52, 211, 153, 0.08); }
+.dup-badge.status-progress  { color: #60a5fa; border-color: rgba(96, 165, 250, 0.2); background: rgba(96, 165, 250, 0.08); }
+.dup-badge.severity-low     { color: #34d399; border-color: rgba(52, 211, 153, 0.2); background: rgba(52, 211, 153, 0.08); }
+.dup-badge.severity-medium  { color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); background: rgba(251, 191, 36, 0.08); }
+.dup-badge.severity-high    { color: #f87171; border-color: rgba(248, 113, 113, 0.2); background: rgba(248, 113, 113, 0.08); }
+.dup-badge.severity-critical { color: #c084fc; border-color: rgba(192, 132, 252, 0.2); background: rgba(192, 132, 252, 0.08); }
+
+/* ---- Match reason ---- */
+.dup-match-reason {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-style: italic;
+  line-height: 1.4;
+  padding: 0.5rem 0.625rem;
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.08);
+  border-radius: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+.dup-match-reason svg {
+  vertical-align: -2px;
+  margin-right: 0.25rem;
+}
+
+/* ---- Location + distance ---- */
+.dup-location-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+.dup-location-row svg {
+  flex-shrink: 0;
+}
+.dup-distance-badge {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.15);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+
+/* ---- Card actions ---- */
+.dup-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.dup-btn-view,
+.dup-btn-support {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.625rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dup-btn-view {
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  color: #93c5fd;
+}
+.dup-btn-view:hover {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+.dup-btn-support {
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  color: #6ee7b7;
+}
+.dup-btn-support:hover {
+  background: rgba(52, 211, 153, 0.2);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+/* ---- Footer ---- */
+.dup-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: center;
+}
+
+.dup-btn-continue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+  transition: all 0.25s ease;
+}
+.dup-btn-continue:hover {
+  box-shadow: 0 6px 25px rgba(124, 58, 237, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ---- Loading state ---- */
+.dup-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+}
+.dup-loading-text {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.dup-loading-sub {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+/* ---- Spin animation ---- */
+@keyframes dup-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.dup-spin {
+  animation: dup-spin 1s linear infinite;
+}
+
+/* ---- Pulse animation for icon ---- */
+@keyframes dup-pulse-glow {
+  0%, 100% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+  50% { box-shadow: 0 4px 25px rgba(245, 158, 11, 0.5); }
+}
+.dup-header-icon {
+  animation: dup-pulse-glow 2s ease-in-out infinite;
+}
+
+/* ---- Card image thumbnail ---- */
+.dup-card-image {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 0.5rem;
+}
+
+/* ---- Upvote count ---- */
+.dup-upvote-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.675rem;
+  font-weight: 600;
+  color: #6ee7b7;
+}
+
+/* ---- Time ago ---- */
+.dup-time-ago {
+  font-size: 0.65rem;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .dup-modal {
+    max-height: 95vh;
+    border-radius: 1rem;
+  }
+  .dup-header {
+    padding: 1rem;
+  }
+  .dup-body {
+    padding: 0.75rem 1rem;
+  }
+  .dup-footer {
+    padding: 0.75rem 1rem;
+  }
+  .dup-card-actions {
+    flex-direction: column;
+  }
+}

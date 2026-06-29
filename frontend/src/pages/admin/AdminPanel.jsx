@@ -4,6 +4,7 @@ import { ShieldCheck, Loader2, Search, Trash2, Edit3, X, CheckCircle, MapPin, Al
 import { getStatusBadgeClass, getSeverityBadgeClass, formatDate, truncate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import OfficerCopilot from '../../components/OfficerCopilot';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -144,6 +145,9 @@ const AdminPanel = () => {
         <StatCard icon={CheckCircle} title="Resolved" value={stats.resolved} colorClass="text-green-500" />
         <StatCard icon={XCircle} title="Rejected" value={stats.rejected} colorClass="text-red-500" />
       </div>
+
+      {/* Officer AI Copilot */}
+      <OfficerCopilot />
 
       <div className="glass rounded-2xl p-6 border border-purple-500/20">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

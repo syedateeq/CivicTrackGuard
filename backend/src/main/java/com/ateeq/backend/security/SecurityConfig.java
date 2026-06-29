@@ -46,6 +46,7 @@ public class SecurityConfig {
                         // Admin-only write operations
                         .requestMatchers(HttpMethod.PUT, "/api/issues/*/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/issues/**").hasRole("ADMIN")
+                        .requestMatchers("/api/copilot/**").hasRole("ADMIN")
                         // Everything else requires auth
                         .anyRequest().authenticated()
                 )

@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '../api/axiosConfig';
 import { getErrorMessage } from '../utils/helpers';
+import DuplicateDetectionModal from './DuplicateDetectionModal';
 import './AIIntakeAgent.css';
 
 // Fix Leaflet default icon
@@ -65,6 +66,12 @@ export default function AIIntakeAgent({ onAiComplete, onSkipToManual }) {
   const [isListening, setIsListening] = useState(false);
   const [typingText, setTypingText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+
+  // Duplicate detection state
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [duplicates, setDuplicates] = useState([]);
+  const pendingAutoFillRef = useRef(null);
 
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -271,10 +278,27 @@ export default function AIIntakeAgent({ onAiComplete, onSkipToManual }) {
     }
   }, [description, imageUrl, imageFile, latitude, longitude, address, typeText, onSkipToManual]);
 
-  // Auto-fill handler
-  const handleAutoFill = useCallback(() => {
+  // Perform the actual form auto-fill (called after duplicate check passes)
+  const doAutoFill = useCallback((data) => {
+    onAiComplete(data);
+    toast.success('Form auto-filled! Review and submit below 👇');
+  }, [onAiComplete]);
+
+  // Dismiss duplicate modal and proceed with the original auto-fill
+  const handleDismissDuplicates = useCallback(() => {
+    setShowDuplicateModal(false);
+    setDuplicates([]);
+    if (pendingAutoFillRef.current) {
+      doAutoFill(pendingAutoFillRef.current);
+      pendingAutoFillRef.current = null;
+    }
+  }, [doAutoFill]);
+
+  // Auto-fill handler — triggers duplicate check first, then fills if none found
+  const handleAutoFill = useCallback(async () => {
     if (!aiResult) return;
-    onAiComplete({
+
+    const autoFillData = {
       title: aiResult.title || '',
       description: description,
       category: aiResult.category || 'OTHER',
@@ -291,9 +315,51 @@ export default function AIIntakeAgent({ onAiComplete, onSkipToManual }) {
       tags: (aiResult.tags || []).join(', '),
       suggestedResolution: aiResult.suggestedResolution || '',
       estimatedResolutionTime: aiResult.estimatedResolutionTime || '',
-    });
-    toast.success('Form auto-filled! Review and submit below 👇');
-  }, [aiResult, description, address, latitude, longitude, imageUrl, onAiComplete]);
+    };
+
+    // Show modal immediately in loading state
+    setCheckingDuplicates(true);
+    setShowDuplicateModal(true);
+    setDuplicates([]);
+    pendingAutoFillRef.current = autoFillData;
+
+    try {
+      const res = await api.post('/issues/check-duplicates', {
+        description: description.trim(),
+        title: aiResult.title || '',
+        category: aiResult.category || '',
+        latitude: latitude || undefined,
+        longitude: longitude || undefined,
+        address: address || undefined,
+        imageUrl: imageUrl || undefined,
+      });
+
+      const { duplicatesFound, candidates } = res.data || {};
+
+      if (duplicatesFound && candidates && candidates.length > 0) {
+        // Show duplicates — user decides what to do
+        setDuplicates(candidates);
+        setCheckingDuplicates(false);
+        toast.error(
+          `⚠️ ${candidates.length} similar issue${candidates.length > 1 ? 's' : ''} already reported!`,
+          { duration: 4000 }
+        );
+      } else {
+        // No duplicates — close modal and proceed
+        setShowDuplicateModal(false);
+        setCheckingDuplicates(false);
+        pendingAutoFillRef.current = null;
+        doAutoFill(autoFillData);
+      }
+    } catch (err) {
+      // Graceful fallback — never block the user from reporting
+      console.warn('Duplicate check failed (non-blocking):', err.message);
+      setShowDuplicateModal(false);
+      setCheckingDuplicates(false);
+      pendingAutoFillRef.current = null;
+      doAutoFill(autoFillData);
+    }
+  }, [aiResult, description, address, latitude, longitude, imageUrl, doAutoFill]);
 
   // Step calc
   const currentStep = useMemo(() => {
@@ -625,6 +691,14 @@ export default function AIIntakeAgent({ onAiComplete, onSkipToManual }) {
           </button>
         )}
       </div>
+
+      {/* Duplicate Detection Modal */}
+      <DuplicateDetectionModal
+        visible={showDuplicateModal}
+        loading={checkingDuplicates}
+        duplicates={duplicates}
+        onDismiss={handleDismissDuplicates}
+      />
     </div>
   );
 }

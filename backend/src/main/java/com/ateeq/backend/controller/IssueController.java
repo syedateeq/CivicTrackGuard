@@ -1,9 +1,12 @@
 package com.ateeq.backend.controller;
 
+import com.ateeq.backend.dto.DuplicateCheckRequest;
+import com.ateeq.backend.dto.DuplicateCheckResponse;
 import com.ateeq.backend.dto.IssueRequest;
 import com.ateeq.backend.dto.IssueResponse;
 import com.ateeq.backend.dto.UpdateStatusRequest;
 import com.ateeq.backend.service.CloudinaryService;
+import com.ateeq.backend.service.DuplicateDetectionService;
 import com.ateeq.backend.service.IssueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +25,16 @@ public class IssueController {
 
     private final IssueService issueService;
     private final CloudinaryService cloudinaryService;
+    private final DuplicateDetectionService duplicateDetectionService;
 
     @PostMapping
     public IssueResponse createIssue(@Valid @RequestBody IssueRequest request) {
         return issueService.createIssue(request);
+    }
+
+    @PostMapping("/check-duplicates")
+    public DuplicateCheckResponse checkDuplicates(@RequestBody DuplicateCheckRequest request) {
+        return duplicateDetectionService.checkDuplicates(request);
     }
 
     @PostMapping("/upload-image")
