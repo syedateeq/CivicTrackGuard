@@ -56,6 +56,9 @@ public class Issue {
     @Column(length = 1000)
     private String tags;
 
+    @Column(columnDefinition = "TEXT")
+    private String resolutionPlan;
+
     private LocalDateTime createdAt;
 
     @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM votes v WHERE v.issue_id = id AND v.vote_type = 'UPVOTE')")

@@ -4,6 +4,8 @@ import com.ateeq.backend.dto.AiAnalysisRequest;
 import com.ateeq.backend.dto.AiAnalysisResponse;
 import com.ateeq.backend.dto.AiIntakeRequest;
 import com.ateeq.backend.dto.AiIntakeResponse;
+import com.ateeq.backend.dto.ResolutionPlanResponse;
+import com.ateeq.backend.model.Issue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -615,6 +617,144 @@ public class GeminiService {
             log.error("Failed to parse Gemini text response: {}", e.getMessage());
             throw new RuntimeException("Failed to extract text from AI response");
         }
+    }
+    // ======================== AI RESOLUTION PLANNER ========================
+
+    public ResolutionPlanResponse generateResolutionPlan(Issue issue) {
+        try {
+            String prompt = buildResolutionPrompt(issue);
+            String geminiResponse = callGeminiApi(prompt);
+            return parseResolutionResponse(geminiResponse);
+        } catch (Exception e) {
+            log.error("Gemini Resolution Planner failed: {}", e.getMessage());
+            return buildResolutionFallback(issue);
+        }
+    }
+
+    private String buildResolutionPrompt(Issue issue) {
+        return String.format("""
+            You are a highly intelligent Civic Issue Resolution Planner.
+            Generate a detailed, step-by-step resolution plan for the following civic issue.
+            
+            Issue Title: %s
+            Description: %s
+            Category: %s
+            Severity: %s
+            Location: %s
+            
+            Respond ONLY with valid JSON. Do not include markdown, code blocks, or extra text.
+            
+            Required JSON structure:
+            {
+              "department": "Name of the responsible department",
+              "priority": "LOW | MEDIUM | HIGH | URGENT",
+              "estimatedTime": "e.g., 2 Days, 1 Week",
+              "estimatedCost": "e.g., ₹15,000 or $500",
+              "workers": "e.g., 4 Workers",
+              "equipment": ["Item 1", "Item 2"],
+              "materials": ["Material 1", "Material 2"],
+              "safety": ["Safety step 1", "Safety step 2"],
+              "steps": ["Step 1: ...", "Step 2: ..."],
+              "citizenImpact": "Brief impact statement",
+              "confidence": integer between 0 and 100,
+              "reasoning": "Brief explanation of this plan"
+            }
+            """,
+            issue.getTitle(),
+            issue.getDescription(),
+            issue.getCategory(),
+            issue.getSeverity(),
+            issue.getAddress() != null ? issue.getAddress() : "Not specified"
+        );
+    }
+
+    private ResolutionPlanResponse parseResolutionResponse(String responseBody) {
+        try {
+            JsonNode root = objectMapper.readTree(responseBody);
+            String text = root
+                    .path("candidates").get(0)
+                    .path("content")
+                    .path("parts").get(0)
+                    .path("text").asText();
+
+            text = text.trim();
+            if (text.startsWith("```")) {
+                text = text.replaceAll("```json\\n?", "").replaceAll("```\\n?", "").trim();
+            }
+
+            return objectMapper.readValue(text, ResolutionPlanResponse.class);
+        } catch (Exception e) {
+            log.error("Failed to parse Gemini resolution response: {}", e.getMessage());
+            throw new RuntimeException("Failed to parse AI resolution response");
+        }
+    }
+
+    private ResolutionPlanResponse buildResolutionFallback(Issue issue) {
+        String category = issue.getCategory() != null ? issue.getCategory().toUpperCase() : "OTHER";
+        
+        ResolutionPlanResponse plan = new ResolutionPlanResponse();
+        plan.setConfidence(60);
+        plan.setReasoning("Generated via rule-based fallback because AI service is unavailable.");
+        plan.setCitizenImpact("Could cause inconvenience if delayed.");
+        
+        switch (category) {
+            case "ROAD_DAMAGE":
+                plan.setDepartment("Roads & Infrastructure");
+                plan.setPriority("HIGH");
+                plan.setEstimatedTime("3 Days");
+                plan.setEstimatedCost("₹12,000");
+                plan.setWorkers("4 Workers");
+                plan.setEquipment(java.util.List.of("Asphalt Mixer", "Road Roller", "Safety Cones"));
+                plan.setMaterials(java.util.List.of("Asphalt", "Gravel", "Tar"));
+                plan.setSafety(java.util.List.of("Barricade area", "Redirect traffic", "Night warning lights"));
+                plan.setSteps(java.util.List.of("Inspect damage", "Secure location", "Remove damaged asphalt", "Fill pothole", "Compact surface", "Final inspection"));
+                break;
+            case "GARBAGE":
+                plan.setDepartment("Sanitation & Waste Management");
+                plan.setPriority("MEDIUM");
+                plan.setEstimatedTime("1 Day");
+                plan.setEstimatedCost("₹2,000");
+                plan.setWorkers("2 Workers");
+                plan.setEquipment(java.util.List.of("Garbage Truck", "Shovels", "Brooms"));
+                plan.setMaterials(java.util.List.of("Trash Bags", "Disinfectant"));
+                plan.setSafety(java.util.List.of("Wear gloves", "Wear masks"));
+                plan.setSteps(java.util.List.of("Arrive at location", "Collect waste", "Sanitize area", "Transport to dump yard"));
+                break;
+            case "WATER_LEAKAGE":
+                plan.setDepartment("Water Supply & Sewerage");
+                plan.setPriority("URGENT");
+                plan.setEstimatedTime("1 Day");
+                plan.setEstimatedCost("₹5,000");
+                plan.setWorkers("3 Workers");
+                plan.setEquipment(java.util.List.of("Excavator", "Water Pumps", "Wrenches"));
+                plan.setMaterials(java.util.List.of("PVC Pipes", "Sealant"));
+                plan.setSafety(java.util.List.of("Shut off main valve", "Wear waterproof gear"));
+                plan.setSteps(java.util.List.of("Locate leak", "Shut off water supply", "Excavate pipe area", "Replace broken pipe segment", "Test for leaks", "Restore surface"));
+                break;
+            case "STREETLIGHT":
+                plan.setDepartment("Electricity & Public Lighting");
+                plan.setPriority("MEDIUM");
+                plan.setEstimatedTime("2 Days");
+                plan.setEstimatedCost("₹3,500");
+                plan.setWorkers("2 Workers");
+                plan.setEquipment(java.util.List.of("Bucket Truck", "Voltage Tester"));
+                plan.setMaterials(java.util.List.of("LED Bulbs", "Wiring"));
+                plan.setSafety(java.util.List.of("Cut power to pole", "Wear insulated gloves"));
+                plan.setSteps(java.util.List.of("Inspect pole", "Verify power is off", "Replace bulb/wiring", "Restore power", "Test functionality"));
+                break;
+            default:
+                plan.setDepartment(issue.getDepartment() != null ? issue.getDepartment() : "Municipal Corporation");
+                plan.setPriority(issue.getSeverity() != null ? issue.getSeverity().name() : "MEDIUM");
+                plan.setEstimatedTime("3-5 Days");
+                plan.setEstimatedCost("Unknown");
+                plan.setWorkers("Team");
+                plan.setEquipment(java.util.List.of("Standard Tools"));
+                plan.setMaterials(java.util.List.of("Standard Supplies"));
+                plan.setSafety(java.util.List.of("Standard safety protocol"));
+                plan.setSteps(java.util.List.of("Inspect site", "Determine requirements", "Execute repair", "Verify completion"));
+                break;
+        }
+        return plan;
     }
 }
 

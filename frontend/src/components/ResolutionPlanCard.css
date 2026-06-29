@@ -1,0 +1,42 @@
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .resolution-plan-card, .resolution-plan-card * {
+    visibility: visible;
+  }
+  .resolution-plan-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    background: white;
+    color: black;
+  }
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Strip out glassmorphism styles for clean printing */
+  .resolution-plan-card.glass,
+  .resolution-plan-card .bg-slate-900\/50,
+  .resolution-plan-card .bg-slate-800\/40,
+  .resolution-plan-card .bg-red-500\/10,
+  .resolution-plan-card .bg-orange-500\/10 {
+    background: transparent !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .resolution-plan-card .text-slate-200,
+  .resolution-plan-card .text-slate-300,
+  .resolution-plan-card .text-slate-400,
+  .resolution-plan-card .text-slate-500,
+  .resolution-plan-card .text-white {
+    color: #0f172a !important;
+  }
+  
+  .resolution-plan-card .text-indigo-400 {
+    color: #4f46e5 !important;
+  }
+}

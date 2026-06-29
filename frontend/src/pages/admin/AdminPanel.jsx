@@ -5,6 +5,7 @@ import { getStatusBadgeClass, getSeverityBadgeClass, formatDate, truncate } from
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import OfficerCopilot from '../../components/OfficerCopilot';
+import ResolutionPlanCard from '../../components/ResolutionPlanCard';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -313,6 +314,11 @@ const AdminPanel = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* AI Resolution Planner */}
+            <div className="mb-6">
+              <ResolutionPlanCard issueId={editingIssue.id} />
             </div>
 
             <div className="flex gap-3 justify-end pt-4 border-t border-white/10">
