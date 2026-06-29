@@ -140,16 +140,16 @@ const IssueFeed = () => {
     try {
       let res;
       if (search.trim()) {
-        res = await api.get(`/api/issues/search?keyword=${encodeURIComponent(search)}&page=${page}&size=9`);
+        res = await api.get(`/issues/search?keyword=${encodeURIComponent(search)}&page=${page}&size=9`);
       } else if (category !== 'ALL') {
-        res = await api.get(`/api/issues/category/${category}`);
+        res = await api.get(`/issues/category/${category}`);
         const data = Array.isArray(res.data) ? res.data.filter(i => i.status !== 'REJECTED') : [];
         const filtered = status !== 'ALL' ? data.filter(i => i.status === status) : data;
         setIssues(filtered);
         setTotalPages(1);
         return;
       } else {
-        res = await api.get(`/api/issues/page?page=${page}&size=9`);
+        res = await api.get(`/issues/page?page=${page}&size=9`);
       }
 
       const d = res.data;

@@ -11,7 +11,7 @@ const Leaderboard = () => {
     const load = async (showLoading = true) => {
       if (showLoading) setLoading(true);
       try {
-        const res = await api.get('/api/leaderboard');
+        const res = await api.get('/leaderboard');
         setLeaders(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error(err);

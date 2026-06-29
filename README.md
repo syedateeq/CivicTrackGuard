@@ -93,6 +93,30 @@ Gemini acts as an autonomous agent that reads the title, description, and locati
 
 *(Note: Passwords are securely hashed using BCrypt. The backend ensures that password hashes are NEVER exposed in any API responses.)*
 
+## ☁️ Deployment (Google Cloud)
+
+CivicTrackGuard is ready for deployment on **Google Cloud Platform (GCP)** using **Cloud Run**.
+
+### 1. Build Docker Images
+We have provided `Dockerfile`s for both the backend and frontend.
+
+**Backend:**
+```bash
+cd backend
+docker build -t gcr.io/[PROJECT_ID]/ctg-backend .
+docker push gcr.io/[PROJECT_ID]/ctg-backend
+```
+
+**Frontend:**
+```bash
+cd frontend
+docker build --build-arg VITE_API_URL=https://[YOUR_CLOUD_RUN_BACKEND_URL] -t gcr.io/[PROJECT_ID]/ctg-frontend .
+docker push gcr.io/[PROJECT_ID]/ctg-frontend
+```
+
+### 2. Deploy to Cloud Run
+Deploy the images to Cloud Run from the GCP console or via CLI, mapping port `8080` for backend and `80` for frontend. Ensure you set all the environment variables (DB URLs, Gemini keys, etc.) on the backend service.
+
 ---
 
 ## 🎯 Hackathon Impact

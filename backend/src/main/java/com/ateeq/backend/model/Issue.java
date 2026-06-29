@@ -53,13 +53,13 @@ public class Issue {
 
     private LocalDateTime createdAt;
 
-    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM vote v WHERE v.issue_id = id AND v.vote_type = 'UPVOTE')")
+    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM votes v WHERE v.issue_id = id AND v.vote_type = 'UPVOTE')")
     private Long upvoteCount;
 
-    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM vote v WHERE v.issue_id = id AND v.vote_type = 'DOWNVOTE')")
+    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM votes v WHERE v.issue_id = id AND v.vote_type = 'DOWNVOTE')")
     private Long downvoteCount;
 
-    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM comment c WHERE c.issue_id = id)")
+    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM comments c WHERE c.issue_id = id)")
     private Long commentCount;
 
     @ManyToOne(fetch = FetchType.LAZY)

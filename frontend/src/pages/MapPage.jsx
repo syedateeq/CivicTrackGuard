@@ -44,7 +44,7 @@ const MapPage = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await api.get('/api/issues');
+        const res = await api.get('/issues');
         const withCoords = (Array.isArray(res.data) ? res.data : [])
           .filter(i => i.latitude && i.longitude);
         setIssues(withCoords);

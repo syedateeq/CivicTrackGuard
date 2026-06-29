@@ -23,7 +23,7 @@ const Profile = () => {
     const load = async () => {
       try {
         await refreshUser();
-        const res = await api.get('/api/issues/me');
+        const res = await api.get('/issues/me');
         const myIssuesData = Array.isArray(res.data) ? res.data : (res.data?.content || []);
         setMyIssues(myIssuesData);
       } catch (err) {

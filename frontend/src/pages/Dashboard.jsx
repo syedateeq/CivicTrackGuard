@@ -57,10 +57,10 @@ const Dashboard = () => {
     const load = async () => {
       try {
         const [statsRes, sevRes, catRes, recentRes] = await Promise.allSettled([
-          api.get('/api/dashboard/stats'),
-          api.get('/api/dashboard/severity'),
-          api.get('/api/dashboard/category'),
-          api.get('/api/issues/page?page=0&size=6'),
+          api.get('/dashboard/stats'),
+          api.get('/dashboard/severity'),
+          api.get('/dashboard/category'),
+          api.get('/issues/page?page=0&size=6'),
         ]);
 
         if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);

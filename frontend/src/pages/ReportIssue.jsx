@@ -127,7 +127,7 @@ const ReportIssue = () => {
     try {
       const fd = new FormData();
       fd.append('file', imageFile);
-      const res = await api.post('/api/issues/upload-image', fd, {
+      const res = await api.post('/issues/upload-image', fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       const url = res.data?.imageUrl || res.data;
@@ -148,7 +148,7 @@ const ReportIssue = () => {
     setAnalyzing(true);
     setAiResult(null);
     try {
-      const res = await api.post('/api/ai/analyze', {
+      const res = await api.post('/ai/analyze', {
         title: form.title,
         description: form.description,
         location: form.address || undefined,
@@ -184,7 +184,7 @@ const ReportIssue = () => {
       try {
         const fd = new FormData();
         fd.append('file', imageFile);
-        const res = await api.post('/api/issues/upload-image', fd, {
+        const res = await api.post('/issues/upload-image', fd, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         finalImageUrl = res.data?.imageUrl || res.data;
@@ -214,7 +214,7 @@ const ReportIssue = () => {
           department: aiResult.department,
         }),
       };
-      const res = await api.post('/api/issues', payload);
+      const res = await api.post('/issues', payload);
       toast.success('Issue reported successfully! 🎉');
       navigate(`/issues/${res.data.id}`);
     } catch (err) {

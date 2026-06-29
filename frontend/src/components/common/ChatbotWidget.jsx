@@ -99,7 +99,7 @@ const ChatbotWidget = () => {
     setLoading(true);
 
     try {
-      const res = await api.post('/api/chatbot/ask', { message: trimmed });
+      const res = await api.post('/chatbot/ask', { message: trimmed });
       const reply = res.data?.reply || "I'm not sure how to answer that. Try asking something else!";
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'bot', text: reply }]);
       if (!open) setUnread(n => n + 1);

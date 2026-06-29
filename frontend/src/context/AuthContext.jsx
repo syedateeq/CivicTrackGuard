@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchMe = useCallback(async () => {
     try {
-      const response = await api.get('/api/auth/me');
+      const response = await api.get('/auth/me');
       return response.data;
     } catch {
       return null;
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     // Throws on error, so caller can catch and display message
-    const response = await api.post('/api/auth/login', { email, password });
+    const response = await api.post('/auth/login', { email, password });
     const data = response.data; // { token, email, role, userId, name, points }
 
     if (!data.token) throw new Error('No token received from server');
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
-    const response = await api.post('/api/auth/register', userData);
+    const response = await api.post('/auth/register', userData);
     const data = response.data;
     // Auto-login after register
     if (data.token) {

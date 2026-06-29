@@ -38,7 +38,7 @@ const AdminPanel = () => {
   const loadIssues = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const res = await api.get('/api/issues');
+      const res = await api.get('/issues');
       setIssues(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       if (showLoading) toast.error('Failed to load issues');
@@ -59,7 +59,7 @@ const AdminPanel = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this issue? This cannot be undone.')) return;
     try {
-      await api.delete(`/api/issues/${id}`);
+      await api.delete(`/issues/${id}`);
       setIssues(prev => prev.filter(i => i.id !== id));
       toast.success('Issue deleted');
     } catch (err) {
@@ -76,7 +76,7 @@ const AdminPanel = () => {
 
     setStatusUpdating(true);
     try {
-      const res = await api.put(`/api/issues/${editingIssue.id}/status`, { 
+      const res = await api.put(`/issues/${editingIssue.id}/status`, { 
         status: newStatus,
         department: newDepartment || null
       });

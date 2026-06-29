@@ -287,8 +287,8 @@ const IssueDetails = () => {
       setError(null);
       try {
         const [issueRes, commentsRes] = await Promise.all([
-          api.get(`/api/issues/${numericId}`),
-          api.get(`/api/comments/issue/${numericId}`),
+          api.get(`/issues/${numericId}`),
+          api.get(`/comments/issue/${numericId}`),
         ]);
 
         const issueData = issueRes.data;
@@ -303,7 +303,7 @@ const IssueDetails = () => {
         } else {
           // Fallback: fetch net count and treat as upvotes
           try {
-            const voteRes = await api.get(`/api/votes/issue/${numericId}/count`);
+            const voteRes = await api.get(`/votes/issue/${numericId}/count`);
             const net = voteRes.data ?? 0;
             setUpvotes(Math.max(0, net));
             setDownvotes(net < 0 ? Math.abs(net) : 0);
@@ -327,7 +327,7 @@ const IssueDetails = () => {
   const refreshVoteCounts = async () => {
     if (!numericId) return;
     try {
-      const res = await api.get(`/api/issues/${numericId}`);
+      const res = await api.get(`/issues/${numericId}`);
       setUpvotes(res.data.upvoteCount ?? 0);
       setDownvotes(res.data.downvoteCount ?? 0);
     } catch { /* non-critical */ }
@@ -338,7 +338,7 @@ const IssueDetails = () => {
     if (!numericId) return;
     setVoting(true);
     try {
-      await api.post('/api/votes', { issueId: numericId, voteType });
+      await api.post('/votes', { issueId: numericId, voteType });
       await refreshVoteCounts();
       toast.success(voteType === 'UPVOTE' ? '👍 Upvoted!' : '👎 Downvoted');
     } catch (err) {
@@ -355,7 +355,7 @@ const IssueDetails = () => {
     if (!numericId) return;
     setSubmittingComment(true);
     try {
-      const res = await api.post('/api/comments', {
+      const res = await api.post('/comments', {
         text: commentText.trim(),
         issueId: numericId,
       });
@@ -374,7 +374,7 @@ const IssueDetails = () => {
     if (!numericId) return;
     setStatusUpdating(true);
     try {
-      const res = await api.put(`/api/issues/${numericId}/status`, { status: newStatus });
+      const res = await api.put(`/issues/${numericId}/status`, { status: newStatus });
       setIssue(res.data);
       toast.success('Status updated!');
     } catch (err) {

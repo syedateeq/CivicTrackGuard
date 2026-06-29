@@ -129,7 +129,7 @@ const Settings = () => {
       setLoadingStats(true);
       try {
         // fetch user's issues
-        const issuesRes = await api.get('/api/issues');
+        const issuesRes = await api.get('/issues');
         const allIssues = Array.isArray(issuesRes.data) ? issuesRes.data : [];
         const myIssues = allIssues.filter(i => i.reporterId === user?.userId);
         const resolved = myIssues.filter(i => i.status === 'RESOLVED').length;
@@ -137,7 +137,7 @@ const Settings = () => {
         // fetch leaderboard for rank
         let rank = '-';
         try {
-          const lbRes = await api.get('/api/leaderboard');
+          const lbRes = await api.get('/leaderboard');
           const lb = Array.isArray(lbRes.data) ? lbRes.data : [];
           const idx = lb.findIndex(e => e.userId === user?.userId);
           if (idx >= 0) rank = idx + 1;
@@ -147,7 +147,7 @@ const Settings = () => {
         let upvotes = 0;
         try {
           const votePromises = myIssues.map(issue =>
-            api.get(`/api/votes/issue/${issue.id}/count`).then(r => r.data).catch(() => 0)
+            api.get(`/votes/issue/${issue.id}/count`).then(r => r.data).catch(() => 0)
           );
           const voteCounts = await Promise.all(votePromises);
           upvotes = voteCounts.reduce((sum, v) => sum + Math.max(0, v), 0);

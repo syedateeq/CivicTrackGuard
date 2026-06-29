@@ -15,7 +15,7 @@ const Notifications = () => {
     const load = async () => {
       if (!user?.userId) return;
       try {
-        const res = await api.get(`/api/notifications/user/${user.userId}`);
+        const res = await api.get(`/notifications/user/${user.userId}`);
         setNotifications(Array.isArray(res.data) ? res.data.reverse() : []);
       } catch (err) {
         toast.error('Failed to load notifications');
@@ -28,7 +28,7 @@ const Notifications = () => {
 
   const markAsSeen = async (id) => {
     try {
-      await api.put(`/api/notifications/${id}/seen`);
+      await api.put(`/notifications/${id}/seen`);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, seen: true } : n));
     } catch (err) {
       toast.error('Failed to update status');
@@ -39,7 +39,7 @@ const Notifications = () => {
     const unread = notifications.filter(n => !n.seen);
     if (unread.length === 0) return;
     try {
-      await Promise.all(unread.map(n => api.put(`/api/notifications/${n.id}/seen`)));
+      await Promise.all(unread.map(n => api.put(`/notifications/${n.id}/seen`)));
       setNotifications(prev => prev.map(n => ({ ...n, seen: true })));
       toast.success('All marked as read');
     } catch (err) {

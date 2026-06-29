@@ -15,16 +15,20 @@ public class BackendApplication {
 			com.ateeq.backend.repository.UserRepository userRepository,
 			org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
 		return args -> {
-			if (userRepository.findByEmail("admin@civictrack.com").isEmpty()) {
-				com.ateeq.backend.model.User admin = com.ateeq.backend.model.User.builder()
-						.name("Admin")
-						.email("admin@civictrack.com")
-						.password(passwordEncoder.encode("admin"))
-						.role("ADMIN")
-						.points(0)
-						.build();
-				userRepository.save(admin);
-				System.out.println("Default Admin seeded: admin@civictrack.com / admin");
+			try {
+				if (userRepository.findByEmail("admin@civictrack.com").isEmpty()) {
+					com.ateeq.backend.model.User admin = com.ateeq.backend.model.User.builder()
+							.name("Admin")
+							.email("admin@civictrack.com")
+							.password(passwordEncoder.encode("admin"))
+							.role("ADMIN")
+							.points(0)
+							.build();
+					userRepository.save(admin);
+					System.out.println("Default Admin seeded: admin@civictrack.com / admin");
+				}
+			} catch (Exception e) {
+				System.err.println("Warning: Admin seed skipped (database may not be ready): " + e.getMessage());
 			}
 		};
 	}
