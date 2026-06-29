@@ -2,6 +2,8 @@ package com.ateeq.backend.service;
 
 import com.ateeq.backend.dto.AiAnalysisRequest;
 import com.ateeq.backend.dto.AiAnalysisResponse;
+import com.ateeq.backend.dto.AiIntakeRequest;
+import com.ateeq.backend.dto.AiIntakeResponse;
 import com.ateeq.backend.model.SeverityLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,13 @@ public class AiService {
      */
     public AiAnalysisResponse analyzeIssue(AiAnalysisRequest request) {
         return geminiService.analyzeIssue(request);
+    }
+
+    /**
+     * AI Intake Agent: extracts all structured fields from a single natural-language description.
+     */
+    public AiIntakeResponse intakeAnalyze(AiIntakeRequest request) {
+        return geminiService.intakeAnalyze(request);
     }
 
     /**

@@ -28,6 +28,8 @@ public class IssueResponse {
     private String aiSummary;
     private String aiExplanation;
     private Integer trustScore;
+    private String priority;
+    private String tags;
     private LocalDateTime createdAt;
 
     // Reporter info (no password)

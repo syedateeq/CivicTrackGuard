@@ -51,6 +51,11 @@ public class Issue {
 
     private Integer trustScore;
 
+    private String priority;
+
+    @Column(length = 1000)
+    private String tags;
+
     private LocalDateTime createdAt;
 
     @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM votes v WHERE v.issue_id = id AND v.vote_type = 'UPVOTE')")

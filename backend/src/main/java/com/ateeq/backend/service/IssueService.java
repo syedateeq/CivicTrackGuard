@@ -36,27 +36,34 @@ public class IssueService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
 
-        // Use AI to predict severity if not provided in request (from frontend AI analysis)
+        // Use severity from request if provided (AI intake), otherwise predict
         SeverityLevel severity = SeverityLevel.MEDIUM;
         String department = request.getDepartment();
 
-        if (request.getAiSummary() == null) {
-            // AI analyze on the fly
-            var aiResponse = aiService.analyzeIssue(
-                com.ateeq.backend.dto.AiAnalysisRequest.builder()
-                    .title(request.getTitle())
-                    .description(request.getDescription())
-                    .location(request.getAddress())
-                    .build()
-            );
-            severity = SeverityLevel.valueOf(aiResponse.getSeverity());
-            department = aiResponse.getDepartment();
-        } else {
+        if (request.getSeverity() != null && !request.getSeverity().isBlank()) {
+            // Frontend passed severity explicitly (from AI Intake Agent)
             try {
-                severity = SeverityLevel.valueOf(
-                    request.getAiSummary() != null ? extractSeverityFromRequest(request) : "MEDIUM"
+                severity = SeverityLevel.valueOf(request.getSeverity().toUpperCase());
+            } catch (Exception ignored) {
+                severity = SeverityLevel.MEDIUM;
+            }
+        } else if (request.getAiSummary() == null) {
+            // No AI data at all — analyze on the fly
+            try {
+                var aiResponse = aiService.analyzeIssue(
+                    com.ateeq.backend.dto.AiAnalysisRequest.builder()
+                        .title(request.getTitle())
+                        .description(request.getDescription())
+                        .location(request.getAddress())
+                        .build()
                 );
-            } catch (Exception ignored) {}
+                severity = SeverityLevel.valueOf(aiResponse.getSeverity());
+                if (department == null || department.isBlank()) {
+                    department = aiResponse.getDepartment();
+                }
+            } catch (Exception e) {
+                severity = aiService.predictSeverity(request.getTitle(), request.getDescription());
+            }
         }
 
         Issue issue = Issue.builder()
@@ -73,6 +80,8 @@ public class IssueService {
                 .aiSummary(request.getAiSummary())
                 .aiExplanation(request.getAiExplanation())
                 .trustScore(request.getTrustScore())
+                .priority(request.getPriority())
+                .tags(request.getTags())
                 .createdAt(LocalDateTime.now())
                 .user(user)
                 .build();
@@ -213,6 +222,8 @@ public class IssueService {
                 .aiSummary(issue.getAiSummary())
                 .aiExplanation(issue.getAiExplanation())
                 .trustScore(issue.getTrustScore())
+                .priority(issue.getPriority())
+                .tags(issue.getTags())
                 .createdAt(issue.getCreatedAt())
                 .reporterId(issue.getUser() != null ? issue.getUser().getId() : null)
                 .reporterName(issue.getUser() != null ? issue.getUser().getName() : "Anonymous")

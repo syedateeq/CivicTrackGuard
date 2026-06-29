@@ -25,4 +25,7 @@ public class IssueRequest {
     private String aiSummary;
     private String aiExplanation;
     private Integer trustScore;
+    private String severity;
+    private String priority;
+    private String tags;
 }
